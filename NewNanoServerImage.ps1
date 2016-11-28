@@ -103,7 +103,7 @@ try
     -MaxSize $MaxSize -AdministratorPassword $AdministratorPassword -TargetPath $vhdPath `
     -DeploymentType $DeploymentType -OEMDrivers:$addOEMDrivers `
     -Compute:$Compute -Storage:$Storage -Clustering:$Clustering `
-    -Containers:$Containers -Packages $Packages -Edition $ServerEdition
+    -Containers:$Containers -Package $Packages -Edition $ServerEdition
 }
 finally
 {
@@ -143,7 +143,10 @@ if($Storage)
 
 if($ExtraDriversPaths -or $featuresToEnable -or $AddMaaSHooks -or $AddCloudbaseInit)
 {
-    $dismPath = Join-Path $NanoServerDir "Tools\dism.exe"
+    # $dismPath = Join-Path $NanoServerDir "Tools\dism.exe"
+	$isoMountDrive2 = (Mount-DiskImage $IsoPath2 -PassThru | Get-Volume).DriveLetter
+    $dismPath = Join-Path $isoMountDrive2 ":\sources\dism.exe"
+	$driversBasePath = MountISO $VirtIODriversISOPath
     $mountDir = Join-Path $NanoServerDir "MountDir"
 
     if(!(Test-Path $mountDir))
@@ -217,6 +220,7 @@ if($ExtraDriversPaths -or $featuresToEnable -or $AddMaaSHooks -or $AddCloudbaseI
 if($Platform -eq "KVM")
 {
     Dismount-DiskImage $VirtIODriversISOPath
+	Dismount-DiskImage $IsoPath2
 }
 
 $diskImage = Mount-DiskImage $vhdPath -PassThru | Get-DiskImage
